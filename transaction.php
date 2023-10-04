@@ -40,6 +40,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     echo "Valor Transacción: " . $valorTransaccion . "<br>";
     echo "CUS: " . $cus . "<br>";
     echo "Descripción: " . $descripcion . "<br>";
+
+    // SELECCIONAR EL ID DEL BANCO ORIGEN
+    $banco = "SELECT bank_id FROM bank WHERE description_bank  = '$bancoOrigen'";
+    $result = $conn->query($banco);
+
 } else {
     echo "No se recibieron datos desde el formulario";
 }
