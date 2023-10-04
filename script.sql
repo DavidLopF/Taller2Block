@@ -45,7 +45,8 @@ INSERT INTO account_type (description_type) VALUES ('Ahorros');
 INSERT INTO account_type (description_type) VALUES ('Corriente');
 
 CREATE TABLE cripher_methods(
-    cripher_id VARCHAR(255) NOT NULL,
+    id_cripher INT NOT NULL AUTO_INCREMENT,
+    cripher_method VARCHAR(255) NOT NULL,
     description_cripher VARCHAR(255) NOT NULL,
     PRIMARY KEY (cripher_id)
 );

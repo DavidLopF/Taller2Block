@@ -24,7 +24,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $cus = $_POST["cus"];
     $descripcion = $_POST["descripcion"];
 
-    // Imprimir los datos recibidos
+    if (empty($fechaHora) || empty($bancoOrigen) || empty($cuentaOrigen) || empty($tipoCuentaOrigen) || empty($bancoDestino) || empty($cuentaDestino) || empty($tipoCuentaDestino) || empty($identificacion) || empty($valorTransaccion) || empty($cus) || empty($descripcion)) {
+        echo "Todos los datos son obligatorios";
+        exit;
+    }
+
     echo "<h2>Información recibida desde el formulario</h2>";
     echo "<hr>";
     echo "Fecha - hora: " . $fechaHora . "<br>";
@@ -70,56 +74,66 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $sql = "INSERT INTO transacciones.`transaction`
     (CUS, bank_send_id, bank_receives_id, account_root, account_destination, amount, transaction_date, description_transaction, account_type_send_id, account_type_receives_id)
     VALUES( $cus, $bankOrigin , $bankDestination, $cuentaOrigen, $cuentaDestino, $valorTransaccion, '$fechaHora' , '$descripcion', $typeAccountOrigin, $typeAccountDestination);";
-    
-    function encrypt_decrypt($action, $string, $metod) {
+
+    function encrypt_decrypt($action, $string, $metod)
+    {
         $output = false;
-     
+
         //$encrypt_method = "AES-128-ECB";
-        $encrypt_method = "DES-".$metod;
+        $encrypt_method = "DES-" . $metod;
         $key = 'ESTA ES MI CLAVE';
-     
-        if ( $action == 'cifrar' ) {
+
+        if ($action == 'cifrar') {
             $output = openssl_encrypt($string, $encrypt_method, $key);
             $output;
-        } else if( $action == 'descifrar' ) {
+        } else if ($action == 'descifrar') {
             $output = openssl_decrypt($string, $encrypt_method, $key);
         }
-     
+
         return $output;
     }
 
-    
+
     if ($conn->query($sql) === TRUE) {
-        
+
         echo "Nuevo registro creado exitosamente";
-        //concatena todos los datos que llegan en el request
         $data = $fechaHora . $bancoOrigen . $cuentaOrigen . $tipoCuentaOrigen . $bancoDestino . $cuentaDestino . $tipoCuentaDestino . $identificacion . $valorTransaccion . $cus . $descripcion;
         echo "<hr>";
         echo "Datos concatenados: " . $data;
         $results = array();
         $cripher_methods = array("CBC", "ECB", "CFB", "OFB");
+        $times = array();
         foreach ($cripher_methods as $method) {
+
+            $start = microtime(true);
             $results[$method] = encrypt_decrypt('cifrar', $data, $method);
+            $end = microtime(true);
+            $times[$method] = $end - $start;
 
             $sql = "INSERT INTO transacciones.cripher_methods
-            (cripher_id, description_cripher)
+            (cripher_method, description_cripher)
             VALUES('$method','$results[$method]');";
-            
+
             if ($conn->query($sql) === TRUE) {
                 echo "Nuevo registro creado exitosamente";
             } else {
                 echo "Error: " . $sql . "<br>" . $conn->error;
-            } 
+            }
         }
-        
+
         echo "<hr>";
         echo "Datos cifrados: ";
         print_r($results);
         echo "<hr>";
+        echo "Tiempos de cifrado en milisegundos: ";
+        print_r($times);
+
+
 
 
     } else {
         echo "Error: " . $sql . "<br>" . $conn->error;
+        
     }
 } else {
     echo "No se recibieron datos desde el formulario";
