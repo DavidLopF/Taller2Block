@@ -26,7 +26,7 @@ CREATE TABLE transaction(
     PRIMARY KEY (CUS),
     FOREIGN KEY (bank_send_id) REFERENCES bank(bank_id),
     FOREIGN KEY (bank_receives_id) REFERENCES bank(bank_id),
-    FOREIGN KEY (account_type_send_id) REFERENCES account_type(account_type_id),
+    FOREIGN KEY (account_type_send_id) REFERENCES account_type(account_type_id)
     FOREIGN KEY (account_type_receives_id) REFERENCES account_type(account_type_id)
 );
 
@@ -43,3 +43,9 @@ INSERT INTO bank (description_bank) VALUES ('Bancolombia');
 
 INSERT INTO account_type (description_type) VALUES ('Ahorros');
 INSERT INTO account_type (description_type) VALUES ('Corriente');
+
+CREATE TABLE cripher_methods(
+    cripher_id VARCHAR(255) NOT NULL,
+    description_cripher VARCHAR(255) NOT NULL,
+    PRIMARY KEY (cripher_id)
+);

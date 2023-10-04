@@ -1,10 +1,10 @@
 <?php
-$entidades = array("Banco de Davivienda", "Bancolombia", "Av Villas", "Banco de Bogota", "Banco de occidente");
+$entidades = array("Banco Davivienda", "Banco de Bogota", "Av Villas", "Banco de Occidente", "Bancolombia");
 $tiposCuenta = array("Ahorros", "Corriente");
 ?>
 
-<form method="post" action="procesar.php">
-    Fecha - hora: <input type="text" name="fechaHora"><br>
+<form method="post" action="transaction.php">
+    Fecha - hora: <input type="datetime-local" name="fechaHora"><br>    
     Banco Origen: 
     <select name="bancoOrigen">
         <?php foreach($entidades as $entidad) { ?>

@@ -26,6 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Imprimir los datos recibidos
     echo "<h2>Información recibida desde el formulario</h2>";
+    echo "<hr>";
     echo "Fecha - hora: " . $fechaHora . "<br>";
     echo "Banco Origen: " . $bancoOrigen . "<br>";
     echo "Cuenta Origen: " . $cuentaOrigen . "<br>";
@@ -37,19 +38,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     echo "Valor Transacción: " . $valorTransaccion . "<br>";
     echo "CUS: " . $cus . "<br>";
     echo "Descripción: " . $descripcion . "<br>";
+    echo "<hr>";
 
     // SELECCIONAR EL ID DEL BANCO ORIGEN
     $banco = "SELECT bank_id FROM bank WHERE description_bank  = '$bancoOrigen'";
     $result = $conn->query($banco);
     $row = $result->fetch_assoc();
-    echo "ID Banco Origen: " . $row["bank_id"] . "<br>";
     $bankOrigin = $row["bank_id"];
 
     // SELECCIONAR EL ID DEL BANCO DESTINO
     $banco = "SELECT bank_id FROM bank WHERE description_bank  = '$bancoDestino'";
     $result = $conn->query($banco);
     $row = $result->fetch_assoc();
-    echo "ID Banco Destino: " . $row["bank_id"] . "<br>";
     $bankDestination = $row["bank_id"];
 
 
@@ -57,14 +57,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $sql = "SELECT account_type_id FROM account_type WHERE description_type = '$tipoCuentaOrigen'";
     $result = $conn->query($sql);
     $row = $result->fetch_assoc();
-    echo "ID Tipo de Cuenta Origen: " . $row["account_type_id"] . "<br>";
     $typeAccountOrigin = $row["account_type_id"];
 
 
     $sql = "SELECT account_type_id FROM account_type WHERE description_type = '$tipoCuentaDestino'";
     $result = $conn->query($sql);
     $row = $result->fetch_assoc();
-    echo "ID Tipo de Cuenta Destino: " . $row["account_type_id"] . "<br>";
     $typeAccountDestination = $row["account_type_id"];
 
 
@@ -72,10 +70,54 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $sql = "INSERT INTO transacciones.`transaction`
     (CUS, bank_send_id, bank_receives_id, account_root, account_destination, amount, transaction_date, description_transaction, account_type_send_id, account_type_receives_id)
     VALUES( $cus, $bankOrigin , $bankDestination, $cuentaOrigen, $cuentaDestino, $valorTransaccion, '$fechaHora' , '$descripcion', $typeAccountOrigin, $typeAccountDestination);";
+    
+    function encrypt_decrypt($action, $string, $metod) {
+        $output = false;
+     
+        //$encrypt_method = "AES-128-ECB";
+        $encrypt_method = "DES-".$metod;
+        $key = 'ESTA ES MI CLAVE';
+     
+        if ( $action == 'cifrar' ) {
+            $output = openssl_encrypt($string, $encrypt_method, $key);
+            $output;
+        } else if( $action == 'descifrar' ) {
+            $output = openssl_decrypt($string, $encrypt_method, $key);
+        }
+     
+        return $output;
+    }
 
     
     if ($conn->query($sql) === TRUE) {
+        
         echo "Nuevo registro creado exitosamente";
+        //concatena todos los datos que llegan en el request
+        $data = $fechaHora . $bancoOrigen . $cuentaOrigen . $tipoCuentaOrigen . $bancoDestino . $cuentaDestino . $tipoCuentaDestino . $identificacion . $valorTransaccion . $cus . $descripcion;
+        echo "<hr>";
+        echo "Datos concatenados: " . $data;
+        $results = array();
+        $cripher_methods = array("CBC", "ECB", "CFB", "OFB");
+        foreach ($cripher_methods as $method) {
+            $results[$method] = encrypt_decrypt('cifrar', $data, $method);
+
+            $sql = "INSERT INTO transacciones.cripher_methods
+            (cripher_id, description_cripher)
+            VALUES('$method','$results[$method]');";
+            
+            if ($conn->query($sql) === TRUE) {
+                echo "Nuevo registro creado exitosamente";
+            } else {
+                echo "Error: " . $sql . "<br>" . $conn->error;
+            } 
+        }
+        
+        echo "<hr>";
+        echo "Datos cifrados: ";
+        print_r($results);
+        echo "<hr>";
+
+
     } else {
         echo "Error: " . $sql . "<br>" . $conn->error;
     }
